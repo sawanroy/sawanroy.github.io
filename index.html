@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PCOD Workout Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #5a7a5a;
+    --sage-light: #8aad8a;
+    --sage-pale: #e8f0e8;
+    --sage-deep: #2d4a2d;
+    --rose: #c97b84;
+    --rose-pale: #f5e8ea;
+    --amber: #c9955a;
+    --amber-pale: #f5ede4;
+    --lavender: #8a7ab5;
+    --lavender-pale: #eeecf7;
+    --cream: #faf7f2;
+    --paper: #f3ede4;
+    --ink: #2a2520;
+    --muted: #7a6e66;
+    --border: rgba(90,122,90,0.18);
+    --shadow: 0 4px 24px rgba(42,37,32,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: var(--sage-deep);
+    padding: 48px 24px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(138,173,138,0.15);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(138,173,138,0.1);
+  }
+  .header-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--sage-light);
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+
+  /* Progress bar in header */
+  .progress-wrap {
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    height: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--sage-light);
+    border-radius: 20px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Day Navigation */
+  .day-nav {
+    display: flex;
+    gap: 8px;
+    padding: 20px 20px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .day-nav::-webkit-scrollbar { display: none; }
+
+  .day-pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 24px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .day-pill.active {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+    box-shadow: 0 4px 12px rgba(90,122,90,0.35);
+  }
+  .day-pill.done-day {
+    border-color: var(--sage-light);
+    color: var(--sage);
+    background: var(--sage-pale);
+  }
+  .day-pill.done-day::after {
+    content: '✓';
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .day-pill.rest-day { color: #bbb; border-style: dashed; }
+
+  /* Day card */
+  .day-card {
+    margin: 16px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-card-header {
+    padding: 22px 22px 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .day-card-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .badge-strength { background: var(--sage-pale); color: var(--sage-deep); }
+  .badge-cortisol { background: var(--lavender-pale); color: var(--lavender); }
+  .badge-cardio { background: var(--amber-pale); color: var(--amber); }
+  .badge-rest { background: var(--rose-pale); color: var(--rose); }
+
+  .day-card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .day-card-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Exercise list */
+  .exercise-list { padding: 8px 0; }
+
+  .exercise-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .exercise-item:active { background: var(--sage-pale); }
+  .exercise-item:last-child { border-bottom: none; }
+
+  .ex-circle {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .ex-circle.checked {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+  .ex-circle.checked::after {
+    content: '';
+    display: block;
+    width: 5px; height: 9px;
+    border: 2px solid white;
+    border-top: none; border-left: none;
+    transform: rotate(45deg) translate(-1px,-1px);
+  }
+
+  .ex-info { flex: 1; }
+  .ex-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    transition: color 0.2s;
+  }
+  .ex-name.done { color: #bbb; text-decoration: line-through; }
+  .ex-sets {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* Benefit note */
+  .benefit-note {
+    margin: 0 22px 22px;
+    padding: 14px 16px;
+    background: var(--sage-pale);
+    border-radius: 12px;
+    border-left: 3px solid var(--sage-light);
+    font-size: 13px;
+    color: var(--sage-deep);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .benefit-note strong {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--sage-light);
+    margin-bottom: 4px;
+  }
+
+  /* Rest day card */
+  .rest-block {
+    padding: 48px 22px;
+    text-align: center;
+  }
+  .rest-emoji {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .rest-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .rest-text { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* Complete day button */
+  .complete-btn {
+    margin: 0 22px 22px;
+    width: calc(100% - 44px);
+    padding: 15px;
+    border-radius: 14px;
+    border: none;
+    background: var(--sage);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(90,122,90,0.3);
+  }
+  .complete-btn:active { transform: scale(0.97); }
+  .complete-btn.all-done {
+    background: var(--sage-deep);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--sage);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  /* Tips section */
+  .tips-section { padding: 0 16px 32px; }
+  .tips-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .tip-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .tip-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .tip-icon.green { background: var(--sage-pale); }
+  .tip-icon.rose { background: var(--rose-pale); }
+  .tip-icon.amber { background: var(--amber-pale); }
+  .tip-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .tip-text strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
+
+  /* Week reset */
+  .reset-btn {
+    display: block;
+    margin: 0 16px 40px;
+    width: calc(100% - 32px);
+    padding: 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">PCOD Fitness Plan</div>
+  <div class="header-title">Your Weekly<br>Workout Plan</div>
+  <div class="header-sub">Strength · Hormones · Skin · Cycles</div>
+  <div class="progress-wrap">
+    <div class="progress-fill" id="prog-fill"></div>
+  </div>
+  <div class="progress-label">
+    <span>Weekly progress</span>
+    <span id="prog-text">0 of 5 days done</span>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="stat-num" id="stat-done">0</div>
+    <div class="stat-label">Days done</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="stat-ex">0</div>
+    <div class="stat-label">Exercises</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="stat-streak">0</div>
+    <div class="stat-label">Streak 🔥</div>
+  </div>
+</div>
+
+<div class="day-nav" id="day-nav"></div>
+<div id="day-content"></div>
+
+<div class="tips-section">
+  <div class="tips-title">PCOD tips</div>
+  <div class="tip-card">
+    <div class="tip-icon green">🥗</div>
+    <div class="tip-text"><strong>Eat to control insulin</strong>Avoid refined sugar, white rice, and processed food. Protein + fibre at every meal reduces insulin spikes that worsen acne.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon rose">😴</div>
+    <div class="tip-text"><strong>Sleep is non-negotiable</strong>7–9 hours regulates cortisol. Late nights raise testosterone levels which worsens both acne and irregular periods.</div>
+  </div>
+  <div class="tip-card">
+    <div class="tip-icon amber">💧</div>
+    <div class="tip-text"><strong>Hydrate well</strong>2.5–3 litres of water daily. Dehydration raises cortisol, directly impacting your cycle and skin clarity.</div>
+  </div>
+</div>
+
+<button class="reset-btn" onclick="resetWeek()">Reset week</button>
+
+<script>
+const DAYS = [
+  {
+    short: 'Mon', name: 'Lower body', sub: 'Metabolism booster',
+    badge: 'Strength', badgeClass: 'badge-strength',
+    benefit: 'Burns fat + improves insulin sensitivity — directly helps both acne and menstrual cycle regularity.',
+    exercises: [
+      { name: 'Squats', sets: '4 sets × 10 reps' },
+      { name: 'Leg press', sets: '3 sets × 12 reps' },
+      { name: 'Glute bridges', sets: '3 sets × 12 reps' },
+      { name: 'Leg curl', sets: '3 sets × 12 reps' },
+      { name: 'Treadmill walk', sets: '10 min easy pace' }
+    ]
+  },
+  {
+    short: 'Tue', name: 'Upper body', sub: 'Low-stress fat burn',
+    badge: 'Strength', badgeClass: 'badge-strength',
+    benefit: 'Keeps fat loss going without spiking cortisol — sustainable and hormone-friendly.',
+    exercises: [
+      { name: 'Lat pulldown', sets: '3 sets × 10 reps' },
+      { name: 'Shoulder press', sets: '3 sets × 10 reps' },
+      { name: 'Cable row', sets: '3 sets × 12 reps' },
+      { name: 'Incline treadmill walk', sets: '20 min' }
+    ]
+  },
+  {
+    short: 'Wed', name: 'Low cortisol day', sub: 'Hormonal reset — do not skip',
+    badge: 'Recovery', badgeClass: 'badge-cortisol',
+    benefit: 'This is what regulates your periods. High cortisol = missed cycles. Most people skip this and regret it.',
+    exercises: [
+      { name: 'Slow outdoor walk', sets: '15 min' },
+      { name: 'Stretching / yoga', sets: '20 min' }
+    ]
+  },
+  {
+    short: 'Thu', name: 'Glutes + strength', sub: 'Hormonal powerhouse',
+    badge: 'Strength', badgeClass: 'badge-strength',
+    benefit: 'Lower body = biggest hormonal lever. Glute training drives estrogen balance and metabolic rate.',
+    exercises: [
+      { name: 'Hip thrust', sets: '4 sets × 10 reps' },
+      { name: 'Lunges', sets: '3 sets × 10 each side' },
+      { name: 'Cable kickbacks', sets: '3 sets × 12 reps' },
+      { name: 'Sumo squats', sets: '3 sets × 12 reps' }
+    ]
+  },
+  {
+    short: 'Fri', name: 'Smart cardio', sub: 'Fat loss + acne control',
+    badge: 'Cardio', badgeClass: 'badge-cardio',
+    benefit: 'Steady-state only — no HIIT. Low-intensity cardio burns fat without cortisol spikes that trigger acne flare-ups.',
+    exercises: [
+      { name: 'Elliptical / cycling', sets: '25 min steady pace' },
+      { name: 'Plank hold', sets: '3 sets × 30 sec' },
+      { name: 'Leg raises', sets: '3 sets × 12 reps' }
+    ]
+  },
+  { short: 'Sat', rest: true },
+  { short: 'Sun', rest: true }
+];
+
+let state = JSON.parse(localStorage.getItem('pcod_workout') || 'null') || {
+  checked: Array.from({length: 7}, () => []),
+  dayDone: Array(7).fill(false),
+  streak: 0
+};
+
+let currentDay = new Date().getDay();
+currentDay = (currentDay === 0) ? 6 : currentDay - 1;
+
+function save() { localStorage.setItem('pcod_workout', JSON.stringify(state)); }
+
+function totalExDone() {
+  return state.checked.reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function updateStats() {
+  const done = state.dayDone.filter(Boolean).length;
+  const exDone = totalExDone();
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-ex').textContent = exDone;
+  document.getElementById('stat-streak').textContent = state.streak;
+  const total = DAYS.filter(d => !d.rest).length;
+  document.getElementById('prog-fill').style.width = (done / total * 100) + '%';
+  document.getElementById('prog-text').textContent = done + ' of ' + total + ' days done';
+}
+
+function buildNav() {
+  const nav = document.getElementById('day-nav');
+  nav.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-pill' + (i === currentDay ? ' active' : '') +
+      (d.rest ? ' rest-day' : '') + (!d.rest && state.dayDone[i] ? ' done-day' : '');
+    btn.textContent = d.short;
+    btn.onclick = () => { currentDay = i; buildNav(); renderDay(); };
+    nav.appendChild(btn);
+  });
+}
+
+function renderDay() {
+  const cont = document.getElementById('day-content');
+  const d = DAYS[currentDay];
+  const i = currentDay;
+
+  if (d.rest) {
+    cont.innerHTML = `<div class="day-card">
+      <div class="rest-block">
+        <span class="rest-emoji">🌿</span>
+        <div class="rest-title">Rest & Recover</div>
+        <div class="rest-text">This is active recovery time.<br>Sleep, hydrate, eat well.<br>Your hormones and muscles are rebuilding right now — this IS the work.</div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const checkedSet = new Set(state.checked[i]);
+  const allDone = checkedSet.size === d.exercises.length;
+
+  const rows = d.exercises.map((ex, j) => {
+    const isChk = checkedSet.has(j);
+    return `<div class="exercise-item" onclick="toggleEx(${i},${j})">
+      <div class="ex-circle ${isChk ? 'checked' : ''}"></div>
+      <div class="ex-info">
+        <div class="ex-name ${isChk ? 'done' : ''}">${ex.name}</div>
+        <div class="ex-sets">${ex.sets}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = `<div class="day-card">
+    <div class="day-card-header">
+      <div class="day-card-badge ${d.badgeClass}">${d.badge}</div>
+      <div class="day-card-title">${d.name}</div>
+      <div class="day-card-subtitle">${d.sub}</div>
+    </div>
+    <div class="exercise-list">${rows}</div>
+    <div class="benefit-note"><strong>Why this works</strong>${d.benefit}</div>
+    <button class="complete-btn ${allDone ? 'all-done' : ''}" onclick="markDayDone(${i})">
+      ${allDone ? '✓ Day complete!' : 'Mark day complete'}
+    </button>
+  </div>`;
+}
+
+function toggleEx(dayIdx, exIdx) {
+  const arr = state.checked[dayIdx];
+  const pos = arr.indexOf(exIdx);
+  if (pos === -1) arr.push(exIdx); else arr.splice(pos, 1);
+  const d = DAYS[dayIdx];
+  state.dayDone[dayIdx] = arr.length === d.exercises.length;
+  if (state.dayDone[dayIdx]) checkStreak();
+  save(); updateStats(); buildNav(); renderDay();
+}
+
+function markDayDone(dayIdx) {
+  const d = DAYS[dayIdx];
+  if (!d.rest) {
+    state.checked[dayIdx] = d.exercises.map((_, j) => j);
+    state.dayDone[dayIdx] = true;
+    checkStreak();
+  }
+  save(); updateStats(); buildNav(); renderDay();
+}
+
+function checkStreak() {
+  let s = 0;
+  for (let i = 0; i < 7; i++) { if (state.dayDone[i]) s++; else break; }
+  if (s > state.streak) state.streak = s;
+}
+
+function resetWeek() {
+  if (!confirm('Reset this week? Your streak will be kept.')) return;
+  state.checked = Array.from({length: 7}, () => []);
+  state.dayDone = Array(7).fill(false);
+  save(); updateStats(); buildNav(); renderDay();
+}
+
+buildNav();
+renderDay();
+updateStats();
+
+// Scroll current day into view
+setTimeout(() => {
+  const active = document.querySelector('.day-pill.active');
+  if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}, 100);
+</script>
+</body>
+</html>

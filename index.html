@@ -325,6 +325,43 @@
   }
   .stat-label { font-size: 11px; color: var(--muted); font-weight: 500; }
 
+  /* Report link */
+  .report-section {
+    padding: 0 16px 18px;
+  }
+  .report-card {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .report-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .report-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .report-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--sage);
+    color: white;
+    box-shadow: 0 4px 16px rgba(90,122,90,0.22);
+  }
+
   /* BMI include */
   .bmi-section {
     padding: 0 16px 18px;
@@ -384,6 +421,7 @@
     color: var(--muted);
     cursor: pointer;
   }
+
 </style>
 </head>
 <body>
@@ -418,6 +456,14 @@
 
 <div class="day-nav" id="day-nav"></div>
 <div id="day-content"></div>
+
+<div class="report-section">
+  <div class="report-card">
+    <div class="report-title">Weekly report</div>
+    <div class="report-sub">Open a separate report page to save this week and review your past workout reports without cluttering this screen.</div>
+    <a class="report-link" href="report.html">Open weekly report</a>
+  </div>
+</div>
 
 <div class="bmi-section">
   <iframe
@@ -512,13 +558,64 @@ let state = JSON.parse(localStorage.getItem('pcod_workout') || 'null') || {
   streak: 0
 };
 
+let reportHistory = JSON.parse(localStorage.getItem('pcod_weekly_reports') || '[]');
+
 let currentDay = new Date().getDay();
 currentDay = (currentDay === 0) ? 6 : currentDay - 1;
 
 function save() { localStorage.setItem('pcod_workout', JSON.stringify(state)); }
+function saveReportHistory() { localStorage.setItem('pcod_weekly_reports', JSON.stringify(reportHistory)); }
 
 function totalExDone() {
   return state.checked.reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function totalExercisesPlanned() {
+  return DAYS.reduce((sum, day) => sum + (day.rest ? 0 : day.exercises.length), 0);
+}
+
+function getWorkoutDayCount() {
+  return DAYS.filter(day => !day.rest).length;
+}
+
+function getRestDayCount() {
+  return DAYS.filter(day => day.rest).length;
+}
+
+function getCurrentWeekReport() {
+  const workoutDays = getWorkoutDayCount();
+  const exercisesPlanned = totalExercisesPlanned();
+  const daysDone = state.dayDone.filter(Boolean).length;
+  const exercisesDone = totalExDone();
+  const completion = exercisesPlanned ? Math.round((exercisesDone / exercisesPlanned) * 100) : 0;
+
+  return {
+    createdAt: new Date().toISOString(),
+    label: 'Current week',
+    workoutDays: workoutDays,
+    restDays: getRestDayCount(),
+    daysDone: daysDone,
+    exercisesDone: exercisesDone,
+    exercisesPlanned: exercisesPlanned,
+    completion: completion,
+    streak: state.streak,
+    days: DAYS.map((day, index) => ({
+      short: day.short,
+      name: day.rest ? 'Rest day' : day.name,
+      rest: !!day.rest,
+      done: !!state.dayDone[index],
+      doneCount: state.checked[index].length,
+      totalCount: day.rest ? 0 : day.exercises.length
+    }))
+  };
+}
+
+function formatReportDate(isoString) {
+  return new Date(isoString).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 }
 
 function updateStats() {
@@ -617,6 +714,13 @@ function checkStreak() {
 
 function resetWeek() {
   if (!confirm('Reset this week? Your streak will be kept.')) return;
+  const currentReport = getCurrentWeekReport();
+  if (currentReport.exercisesDone > 0) {
+    currentReport.label = 'Week of ' + formatReportDate(currentReport.createdAt);
+    reportHistory.unshift(currentReport);
+    reportHistory = reportHistory.slice(0, 12);
+    saveReportHistory();
+  }
   state.checked = Array.from({length: 7}, () => []);
   state.dayDone = Array(7).fill(false);
   save(); updateStats(); buildNav(); renderDay();

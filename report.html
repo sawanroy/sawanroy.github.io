@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Weekly Workout Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #5a7a5a;
+    --sage-light: #8aad8a;
+    --sage-pale: #e8f0e8;
+    --sage-deep: #2d4a2d;
+    --cream: #faf7f2;
+    --ink: #2a2520;
+    --muted: #7a6e66;
+    --shadow: 0 4px 24px rgba(42,37,32,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 36px;
+  }
+
+  .header {
+    background: var(--sage-deep);
+    color: white;
+    padding: 44px 22px 28px;
+  }
+
+  .header-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .header-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    padding: 16px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+
+  .report-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .report-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .report-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .report-badge {
+    background: var(--sage-pale);
+    color: var(--sage-deep);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .report-metric {
+    background: var(--cream);
+    border-radius: 14px;
+    padding: 14px 12px;
+  }
+
+  .report-metric-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--sage);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .report-metric-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .report-days {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .report-day {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .report-day-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .report-day-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .report-day-status {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sage-deep);
+    white-space: nowrap;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn.primary {
+    background: var(--sage);
+    color: white;
+    box-shadow: 0 4px 16px rgba(90,122,90,0.22);
+  }
+
+  .btn.secondary {
+    background: var(--sage-pale);
+    color: var(--sage-deep);
+  }
+
+  .history-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .history-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .history-item {
+    background: var(--cream);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .history-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .history-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .history-date {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .history-score {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sage-deep);
+    white-space: nowrap;
+  }
+
+  .history-meta {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .empty {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  @media (max-width: 520px) {
+    .report-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .actions {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <a class="header-top" href="index.html">Back to workout plan</a>
+    <div class="header-title">Weekly workout report</div>
+    <div class="header-sub">Save your current week, then come back here anytime to view your saved progress reports.</div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="report-head">
+        <div>
+          <div class="report-title">Current week</div>
+          <div class="report-sub">This report is built from the workout progress stored on your device.</div>
+        </div>
+        <div class="report-badge" id="report-badge">0% done</div>
+      </div>
+
+      <div class="report-grid">
+        <div class="report-metric">
+          <div class="report-metric-num" id="report-days-done">0/5</div>
+          <div class="report-metric-label">Workout days</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-num" id="report-ex-done">0/0</div>
+          <div class="report-metric-label">Exercises done</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-num" id="report-rest-days">2</div>
+          <div class="report-metric-label">Rest days</div>
+        </div>
+      </div>
+
+      <div class="report-days" id="report-days"></div>
+
+      <div class="actions">
+        <button class="btn primary" onclick="saveWeeklyReport()">Save weekly report</button>
+        <button class="btn secondary" onclick="window.location.href='index.html'">Go to workout</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="history-title">Saved reports</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </div>
+
+<script>
+const DAYS = [
+  {
+    short: 'Mon', name: 'Lower body',
+    exercises: [
+      { name: 'Squats' },
+      { name: 'Leg press' },
+      { name: 'Glute bridges' },
+      { name: 'Leg curl' },
+      { name: 'Treadmill walk' }
+    ]
+  },
+  {
+    short: 'Tue', name: 'Upper body',
+    exercises: [
+      { name: 'Lat pulldown' },
+      { name: 'Shoulder press' },
+      { name: 'Cable row' },
+      { name: 'Incline treadmill walk' }
+    ]
+  },
+  {
+    short: 'Wed', name: 'Low cortisol day',
+    exercises: [
+      { name: 'Slow outdoor walk' },
+      { name: 'Stretching / yoga' }
+    ]
+  },
+  {
+    short: 'Thu', name: 'Glutes + strength',
+    exercises: [
+      { name: 'Hip thrust' },
+      { name: 'Lunges' },
+      { name: 'Cable kickbacks' },
+      { name: 'Sumo squats' }
+    ]
+  },
+  {
+    short: 'Fri', name: 'Smart cardio',
+    exercises: [
+      { name: 'Elliptical / cycling' },
+      { name: 'Plank hold' },
+      { name: 'Leg raises' }
+    ]
+  },
+  { short: 'Sat', rest: true },
+  { short: 'Sun', rest: true }
+];
+
+let state = JSON.parse(localStorage.getItem('pcod_workout') || 'null') || {
+  checked: Array.from({ length: 7 }, () => []),
+  dayDone: Array(7).fill(false),
+  streak: 0
+};
+
+let reportHistory = JSON.parse(localStorage.getItem('pcod_weekly_reports') || '[]');
+
+function totalExDone() {
+  return state.checked.reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function totalExercisesPlanned() {
+  return DAYS.reduce((sum, day) => sum + (day.rest ? 0 : day.exercises.length), 0);
+}
+
+function getWorkoutDayCount() {
+  return DAYS.filter(day => !day.rest).length;
+}
+
+function getRestDayCount() {
+  return DAYS.filter(day => day.rest).length;
+}
+
+function getCurrentWeekReport() {
+  const workoutDays = getWorkoutDayCount();
+  const exercisesPlanned = totalExercisesPlanned();
+  const daysDone = state.dayDone.filter(Boolean).length;
+  const exercisesDone = totalExDone();
+  const completion = exercisesPlanned ? Math.round((exercisesDone / exercisesPlanned) * 100) : 0;
+
+  return {
+    createdAt: new Date().toISOString(),
+    label: 'Week of ' + formatReportDate(new Date().toISOString()),
+    workoutDays: workoutDays,
+    restDays: getRestDayCount(),
+    daysDone: daysDone,
+    exercisesDone: exercisesDone,
+    exercisesPlanned: exercisesPlanned,
+    completion: completion,
+    streak: state.streak,
+    days: DAYS.map((day, index) => ({
+      short: day.short,
+      name: day.rest ? 'Rest day' : day.name,
+      rest: !!day.rest,
+      done: !!state.dayDone[index],
+      doneCount: state.checked[index].length,
+      totalCount: day.rest ? 0 : day.exercises.length
+    }))
+  };
+}
+
+function formatReportDate(isoString) {
+  return new Date(isoString).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function saveReportHistory() {
+  localStorage.setItem('pcod_weekly_reports', JSON.stringify(reportHistory));
+}
+
+function renderCurrentWeek() {
+  state = JSON.parse(localStorage.getItem('pcod_workout') || 'null') || state;
+  const report = getCurrentWeekReport();
+  document.getElementById('report-badge').textContent = report.completion + '% done';
+  document.getElementById('report-days-done').textContent = report.daysDone + '/' + report.workoutDays;
+  document.getElementById('report-ex-done').textContent = report.exercisesDone + '/' + report.exercisesPlanned;
+  document.getElementById('report-rest-days').textContent = report.restDays;
+
+  document.getElementById('report-days').innerHTML = report.days.map((day) => {
+    const meta = day.rest ? 'Recovery and reset' : day.doneCount + '/' + day.totalCount + ' exercises completed';
+    const status = day.rest ? 'Rest day' : (day.done ? 'Done' : 'In progress');
+    return `<div class="report-day">
+      <div>
+        <div class="report-day-name">${day.short} - ${day.name}</div>
+        <div class="report-day-meta">${meta}</div>
+      </div>
+      <div class="report-day-status">${status}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  reportHistory = JSON.parse(localStorage.getItem('pcod_weekly_reports') || '[]');
+  const list = document.getElementById('history-list');
+
+  if (!reportHistory.length) {
+    list.innerHTML = '<div class="empty">No saved reports yet. Save your current week from this page, or reset the week from the workout page and it will be saved automatically.</div>';
+    return;
+  }
+
+  list.innerHTML = reportHistory.map((report, index) => {
+    return `<div class="history-item">
+      <div class="history-top">
+        <div>
+          <div class="history-name">${report.label || ('Week ' + (index + 1))}</div>
+          <div class="history-date">${formatReportDate(report.createdAt)}</div>
+        </div>
+        <div class="history-score">${report.completion}% complete</div>
+      </div>
+      <div class="history-meta">${report.daysDone}/${report.workoutDays} workout days done, ${report.exercisesDone}/${report.exercisesPlanned} exercises finished, streak ${report.streak}.</div>
+    </div>`;
+  }).join('');
+}
+
+function saveWeeklyReport() {
+  const report = getCurrentWeekReport();
+  reportHistory.unshift(report);
+  reportHistory = reportHistory.slice(0, 12);
+  saveReportHistory();
+  renderHistory();
+  alert('Weekly report saved.');
+}
+
+renderCurrentWeek();
+renderHistory();
+</script>
+</body>
+</html>

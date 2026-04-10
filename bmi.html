@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BMI Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #5a7a5a;
+    --sage-pale: #e8f0e8;
+    --sage-deep: #2d4a2d;
+    --cream: #faf7f2;
+    --ink: #2a2520;
+    --muted: #7a6e66;
+    --border: rgba(90,122,90,0.18);
+    --shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+    color: var(--ink);
+    padding: 0;
+  }
+
+  .bmi-card {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .bmi-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .bmi-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .bmi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .bmi-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .bmi-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+  }
+
+  .bmi-input:focus {
+    border-color: var(--sage);
+    background: white;
+  }
+
+  .bmi-result {
+    background: var(--sage-pale);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  .bmi-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--sage-deep);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .bmi-status {
+    font-size: 13px;
+    color: var(--sage-deep);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .bmi-note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 520px) {
+    .bmi-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="bmi-card">
+    <div class="bmi-title">BMI calculator</div>
+    <div class="bmi-sub">Track your body mass index using your height and weight. This is a quick guide, not a diagnosis.</div>
+    <div class="bmi-grid">
+      <div class="bmi-field">
+        <label for="height-cm">Height (cm)</label>
+        <input class="bmi-input" id="height-cm" type="number" min="50" max="250" step="0.1" placeholder="160" oninput="updateBMI()">
+      </div>
+      <div class="bmi-field">
+        <label for="weight-kg">Weight (kg)</label>
+        <input class="bmi-input" id="weight-kg" type="number" min="10" max="350" step="0.1" placeholder="60" oninput="updateBMI()">
+      </div>
+    </div>
+    <div class="bmi-result">
+      <div class="bmi-value" id="bmi-value">--</div>
+      <div class="bmi-status" id="bmi-status">Enter your details</div>
+      <div class="bmi-note" id="bmi-note">Your result will appear here and be saved on this device.</div>
+    </div>
+  </div>
+
+<script>
+const bmiState = JSON.parse(localStorage.getItem('pcod_bmi') || 'null') || {
+  heightCm: '',
+  weightKg: ''
+};
+
+function saveBMI() {
+  localStorage.setItem('pcod_bmi', JSON.stringify(bmiState));
+}
+
+function getBMICategory(bmi) {
+  if (bmi < 18.5) return { status: 'Underweight', note: 'A clinician or dietitian can help you review nutrition and energy needs.' };
+  if (bmi < 25) return { status: 'Healthy range', note: 'This falls in the general healthy BMI range for most adults.' };
+  if (bmi < 30) return { status: 'Overweight', note: 'BMI is only one marker. Waist size, labs, sleep, and strength also matter.' };
+  return { status: 'Obesity range', note: 'If you want, you can pair this with medical guidance for a fuller health picture.' };
+}
+
+function updateBMI() {
+  const heightInput = document.getElementById('height-cm');
+  const weightInput = document.getElementById('weight-kg');
+  const heightCm = parseFloat(heightInput.value);
+  const weightKg = parseFloat(weightInput.value);
+
+  bmiState.heightCm = heightInput.value;
+  bmiState.weightKg = weightInput.value;
+  saveBMI();
+
+  const bmiValue = document.getElementById('bmi-value');
+  const bmiStatus = document.getElementById('bmi-status');
+  const bmiNote = document.getElementById('bmi-note');
+
+  if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+    bmiValue.textContent = '--';
+    bmiStatus.textContent = 'Enter your details';
+    bmiNote.textContent = 'Your result will appear here and be saved on this device.';
+    notifyParentHeight();
+    return;
+  }
+
+  const bmi = weightKg / Math.pow(heightCm / 100, 2);
+  const result = getBMICategory(bmi);
+  bmiValue.textContent = bmi.toFixed(1);
+  bmiStatus.textContent = result.status;
+  bmiNote.textContent = result.note;
+  notifyParentHeight();
+}
+
+function notifyParentHeight() {
+  if (window.parent !== window) {
+    const height = document.documentElement.scrollHeight;
+    window.parent.postMessage({ type: 'bmi-height', height: height }, '*');
+  }
+}
+
+document.getElementById('height-cm').value = bmiState.heightCm;
+document.getElementById('weight-kg').value = bmiState.weightKg;
+updateBMI();
+
+window.addEventListener('load', notifyParentHeight);
+window.addEventListener('resize', notifyParentHeight);
+</script>
+</body>
+</html>

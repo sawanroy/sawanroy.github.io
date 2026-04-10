@@ -325,6 +325,19 @@
   }
   .stat-label { font-size: 11px; color: var(--muted); font-weight: 500; }
 
+  /* BMI include */
+  .bmi-section {
+    padding: 0 16px 18px;
+  }
+  .bmi-frame {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 280px;
+    border-radius: 18px;
+    background: transparent;
+  }
+
   /* Tips section */
   .tips-section { padding: 0 16px 32px; }
   .tips-title {
@@ -405,6 +418,16 @@
 
 <div class="day-nav" id="day-nav"></div>
 <div id="day-content"></div>
+
+<div class="bmi-section">
+  <iframe
+    class="bmi-frame"
+    id="bmi-frame"
+    src="bmi.html"
+    title="BMI calculator"
+    loading="lazy">
+  </iframe>
+</div>
 
 <div class="tips-section">
   <div class="tips-title">PCOD tips</div>
@@ -602,6 +625,12 @@ function resetWeek() {
 buildNav();
 renderDay();
 updateStats();
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'bmi-height' && typeof event.data.height === 'number') {
+    document.getElementById('bmi-frame').style.height = event.data.height + 'px';
+  }
+});
 
 // Scroll current day into view
 setTimeout(() => {

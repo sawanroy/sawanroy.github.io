@@ -375,6 +375,42 @@
     background: transparent;
   }
 
+  .planner-section {
+    padding: 0 16px 18px;
+  }
+  .planner-card {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .planner-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .planner-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .planner-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--sage);
+    color: white;
+    box-shadow: 0 4px 16px rgba(90,122,90,0.22);
+  }
+
   /* Tips section */
   .tips-section { padding: 0 16px 32px; }
   .tips-title {
@@ -462,6 +498,14 @@
     <div class="report-title">Weekly report</div>
     <div class="report-sub">Open a separate report page to save this week and review your past workout reports without cluttering this screen.</div>
     <a class="report-link" href="report.html">Open weekly report</a>
+  </div>
+</div>
+
+<div class="planner-section">
+  <div class="planner-card">
+    <div class="planner-title">Workout planner module</div>
+    <div class="planner-sub">Create a 12-week plan based on your goal, experience, workout location, schedule, and session time. Then track completed workouts from a dedicated dashboard.</div>
+    <a class="planner-link" href="workout_form.php">Open workout planner</a>
   </div>
 </div>
 

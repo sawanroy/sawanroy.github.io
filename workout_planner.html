@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workout Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --sage:#5a7a5a; --sage-light:#8aad8a; --sage-pale:#e8f0e8; --sage-deep:#2d4a2d; --cream:#faf7f2; --ink:#2a2520; --muted:#7a6e66; --border:rgba(90,122,90,0.18); --shadow:0 12px 35px rgba(42,37,32,0.09); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; }
+  .topbar { background:var(--sage-deep); color:white; padding:28px 16px 32px; }
+  .shell { max-width:1180px; margin:0 auto; }
+  .top-links { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+  .top-links a,.top-links button { border:none; text-decoration:none; background:rgba(255,255,255,0.12); color:white; padding:10px 14px; border-radius:8px; font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; }
+  h1 { font-family:'DM Serif Display',serif; font-size:38px; line-height:1.05; margin-bottom:8px; }
+  .subtitle { color:rgba(255,255,255,0.78); max-width:720px; line-height:1.7; font-size:15px; }
+  .content { padding:18px 16px 40px; }
+  .card,.metric,.panel,.day-card { background:white; border-radius:8px; padding:18px; box-shadow:var(--shadow); }
+  .form-card { max-width:920px; margin:0 auto; padding:24px; }
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .field { display:grid; gap:8px; }
+  .field.full { grid-column:1 / -1; }
+  label { font-size:13px; font-weight:700; color:var(--ink); }
+  select,input { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:14px 15px; font-size:15px; font-family:'DM Sans',sans-serif; background:#fff; color:var(--ink); }
+  .hint,.empty { font-size:13px; color:var(--muted); line-height:1.6; }
+  .actions { display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; }
+  .btn { border:none; border-radius:8px; padding:14px 18px; font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; text-decoration:none; text-align:center; }
+  .btn.primary { background:var(--sage); color:white; }
+  .btn.secondary { background:var(--sage-pale); color:var(--sage-deep); }
+  .info { margin-top:18px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .info-card { background:var(--cream); border-radius:8px; padding:16px; }
+  .info-card strong { display:block; font-size:13px; margin-bottom:6px; }
+  .info-card span { font-size:12px; line-height:1.6; color:var(--muted); }
+  .flash { background:#edf8ed; color:#245124; border:1px solid #bfd9bf; border-radius:8px; padding:14px 16px; margin-bottom:16px; display:none; }
+  .metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+  .metric strong { display:block; font-family:'DM Serif Display',serif; font-size:30px; color:var(--sage); margin-bottom:4px; }
+  .metric span { font-size:13px; color:var(--muted); }
+  .progress-track { width:100%; height:12px; border-radius:8px; background:#edf0ea; overflow:hidden; margin-top:12px; }
+  .progress-fill { height:100%; background:var(--sage); }
+  .week-nav { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:16px; }
+  .week-nav button { flex-shrink:0; color:var(--muted); border:1px solid var(--border); background:white; border-radius:8px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .week-nav button.active { background:var(--sage); color:white; border-color:var(--sage); }
+  .phase-summary { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; margin-bottom:16px; }
+  .phase-summary h2 { font-family:'DM Serif Display',serif; font-size:28px; margin-bottom:8px; }
+  .meta-list { display:grid; gap:10px; }
+  .meta-item { background:var(--cream); border-radius:8px; padding:12px 14px; font-size:13px; color:var(--muted); }
+  .meta-item strong { color:var(--ink); display:block; margin-bottom:4px; }
+  .schedule { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:16px; }
+  .day-card.rest { background:#f7f4ee; }
+  .day-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .day-name { font-family:'DM Serif Display',serif; font-size:24px; margin-bottom:4px; }
+  .day-label { font-size:13px; color:var(--muted); }
+  .tag { background:var(--sage-pale); color:var(--sage-deep); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+  th,td { text-align:left; padding:10px 8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; }
+  th { color:var(--muted); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0; }
+  .day-form { display:grid; gap:10px; }
+  .logs ul { list-style:none; display:grid; gap:10px; }
+  .logs li { background:var(--cream); border-radius:8px; padding:12px 14px; font-size:13px; color:var(--muted); line-height:1.6; }
+  .logs strong { color:var(--ink); }
+  [hidden] { display:none !important; }
+  @media (max-width:980px) { .metrics,.phase-summary,.schedule,.grid,.info { grid-template-columns:1fr; } h1 { font-size:32px; } }
+  @media print { .top-links,.week-nav,.day-form,.flash,#planner-form { display:none !important; } body { background:white; } .metric,.panel,.day-card { box-shadow:none; border:1px solid #ddd; } }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell">
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <button type="button" id="new-plan-btn">Create new plan</button>
+        <button type="button" onclick="window.print()">Download plan as PDF</button>
+        <button type="button" id="reset-btn">Reset plan</button>
+      </div>
+      <h1>Workout Planner</h1>
+      <p class="subtitle">Create a 12-week training plan based on your goal, experience, workout location, weekly availability, and session time.</p>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="shell">
+      <div class="flash" id="flash"></div>
+
+      <section class="card form-card" id="planner-form">
+        <form id="plan-form">
+          <div class="grid">
+            <div class="field">
+              <label for="goal">Fitness Goal</label>
+              <select name="goal" id="goal" required>
+                <option>Weight Loss</option>
+                <option>Muscle Gain</option>
+                <option selected>General Fitness</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="experience">Experience Level</label>
+              <select name="experience" id="experience" required>
+                <option selected>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="location">Workout Location</label>
+              <select name="location" id="location" required>
+                <option>Gym</option>
+                <option selected>Home</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="days_per_week">Days Per Week</label>
+              <select name="days_per_week" id="days_per_week" required>
+                <option>3</option>
+                <option selected>4</option>
+                <option>5</option>
+                <option>6</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="time_per_session">Time Per Session (minutes)</label>
+              <input type="number" min="20" max="180" step="5" name="time_per_session" id="time_per_session" value="45" required>
+              <div class="hint">Choose a realistic session length. The generator uses it to balance lifting volume, cardio, and rest time.</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" type="submit">Generate 12-week plan</button>
+            <button class="btn secondary" type="button" id="view-plan-btn">View current plan</button>
+          </div>
+        </form>
+        <div class="info">
+          <div class="info-card"><strong>Phase 1</strong><span>Weeks 1 to 4 focus on full body training, lower intensity, and technique-first exercise selection.</span></div>
+          <div class="info-card"><strong>Phase 2</strong><span>Weeks 5 to 8 shift to upper and lower splits with more structured overload and accessory work.</span></div>
+          <div class="info-card"><strong>Phase 3</strong><span>Weeks 9 to 12 introduce push, pull, legs, HIIT, and higher training density.</span></div>
+        </div>
+      </section>
+
+      <section id="dashboard" hidden>
+        <section class="metrics">
+          <div class="metric"><strong id="completed-count">0</strong><span>Completed workouts logged</span></div>
+          <div class="metric"><strong id="exercise-count">0</strong><span>Total exercises logged</span></div>
+          <div class="metric"><strong id="weekly-count">0/0</strong><span>Workouts completed this week</span></div>
+          <div class="metric"><strong id="weekly-percent">0%</strong><span>Weekly progress</span><div class="progress-track"><div class="progress-fill" id="weekly-fill" style="width:0%"></div></div></div>
+        </section>
+        <nav class="week-nav" id="week-nav"></nav>
+        <section class="phase-summary">
+          <div class="panel">
+            <h2 id="phase-title"></h2>
+            <p class="hint" id="phase-focus"></p>
+            <div class="meta-list" id="meta-list"></div>
+          </div>
+          <div class="panel logs">
+            <h2 style="font-family:'DM Serif Display',serif; font-size:24px; margin-bottom:14px;">Recent activity</h2>
+            <div id="recent-logs"></div>
+          </div>
+        </section>
+        <section class="schedule" id="schedule"></section>
+      </section>
+    </div>
+  </main>
+
+<script>
+const PLAN_KEY = 'pcod_workout_plan_static';
+const LOG_KEY = 'pcod_workout_logs_static';
+let selectedWeek = 1;
+
+const exercises = [
+  {name:'Squats', difficulty:'Beginner', category:'Legs', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'Bench Press', difficulty:'Intermediate', category:'Push', locations:['Gym'], phases:[1,2,3]},
+  {name:'Push-Ups', difficulty:'Beginner', category:'Push', locations:['Home','Gym'], phases:[1,2,3]},
+  {name:'Deadlift', difficulty:'Advanced', category:'Pull', locations:['Gym'], phases:[2,3]},
+  {name:'Lat Pulldown', difficulty:'Beginner', category:'Pull', locations:['Gym'], phases:[1,2,3]},
+  {name:'Resistance Band Row', difficulty:'Beginner', category:'Pull', locations:['Home'], phases:[1,2,3]},
+  {name:'Shoulder Press', difficulty:'Intermediate', category:'Push', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'Bicep Curl', difficulty:'Beginner', category:'Pull', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'Tricep Pushdown', difficulty:'Beginner', category:'Push', locations:['Gym'], phases:[1,2,3]},
+  {name:'Overhead Tricep Extension', difficulty:'Beginner', category:'Push', locations:['Home'], phases:[1,2,3]},
+  {name:'Plank', difficulty:'Beginner', category:'Cardio', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'Walking', difficulty:'Beginner', category:'Cardio', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'HIIT Intervals', difficulty:'Advanced', category:'Cardio', locations:['Gym','Home'], phases:[3]},
+  {name:'Walking Lunges', difficulty:'Intermediate', category:'Legs', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Romanian Deadlift', difficulty:'Intermediate', category:'Legs', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Glute Bridge', difficulty:'Beginner', category:'Legs', locations:['Gym','Home'], phases:[1,2,3]},
+  {name:'Step-Ups', difficulty:'Beginner', category:'Legs', locations:['Gym','Home'], phases:[1,2]},
+  {name:'Incline Dumbbell Press', difficulty:'Intermediate', category:'Push', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Cable Fly', difficulty:'Intermediate', category:'Push', locations:['Gym'], phases:[3]},
+  {name:'Lateral Raise', difficulty:'Intermediate', category:'Push', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Seated Cable Row', difficulty:'Intermediate', category:'Pull', locations:['Gym'], phases:[2,3]},
+  {name:'Single-Arm Dumbbell Row', difficulty:'Intermediate', category:'Pull', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Face Pull', difficulty:'Intermediate', category:'Pull', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Leg Press', difficulty:'Intermediate', category:'Legs', locations:['Gym'], phases:[2,3]},
+  {name:'Bulgarian Split Squat', difficulty:'Advanced', category:'Legs', locations:['Gym','Home'], phases:[3]},
+  {name:'Mountain Climbers', difficulty:'Intermediate', category:'Cardio', locations:['Gym','Home'], phases:[2,3]},
+  {name:'Cycling', difficulty:'Beginner', category:'Cardio', locations:['Gym','Home'], phases:[1,2,3]}
+];
+
+function html(value) {
+  return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+}
+
+function showFlash(message) {
+  const flash = document.getElementById('flash');
+  flash.textContent = message;
+  flash.style.display = 'block';
+  window.setTimeout(() => flash.style.display = 'none', 3500);
+}
+
+function getPlan() {
+  const value = localStorage.getItem(PLAN_KEY);
+  return value ? JSON.parse(value) : null;
+}
+
+function getLogs() {
+  const value = localStorage.getItem(LOG_KEY);
+  return value ? JSON.parse(value) : [];
+}
+
+function saveLogs(logs) {
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+}
+
+function phaseConfig(phase, input) {
+  const minutes = Math.max(30, Number(input.time_per_session));
+  const configs = {
+    1: {title:'Phase 1: Foundation', weeks:'Weeks 1-4', intensity:'Low intensity', focus:'Full body workouts, movement quality, and consistency.', sets:2, reps:'10-12', rest:75, cardio_minutes:Math.min(minutes, 18), split:'Full Body'},
+    2: {title:'Phase 2: Build', weeks:'Weeks 5-8', intensity:'Moderate intensity', focus:'Upper/lower split with progressive overload.', sets:3, reps:'8-12', rest:60, cardio_minutes:Math.min(minutes, 22), split:'Upper / Lower'},
+    3: {title:'Phase 3: Performance', weeks:'Weeks 9-12', intensity:'High intensity', focus:'Push/pull/legs split with advanced lifts and HIIT.', sets:4, reps:'6-10', rest:45, cardio_minutes:Math.min(minutes, 28), split:'Push / Pull / Legs'}
+  };
+  const config = {...configs[phase]};
+  if (input.experience === 'Advanced' && phase > 1) config.sets += 1;
+  if (input.experience === 'Beginner' && phase === 1) config.rest = 90;
+  if (input.goal === 'Weight Loss') config.cardio_minutes += phase === 3 ? 6 : 4;
+  if (input.goal === 'Muscle Gain') {
+    config.reps = phase === 3 ? '6-8' : '8-10';
+    config.rest += 15;
+  }
+  if (input.goal === 'General Fitness') config.cardio_minutes += 2;
+  return config;
+}
+
+function dayTemplate(phase, daysPerWeek) {
+  if (phase === 1) {
+    const templates = [
+      {label:'Full Body A', type:'workout', categories:['Legs','Push','Pull','Cardio']},
+      {label:'Recovery', type:'rest'},
+      {label:'Full Body B', type:'workout', categories:['Legs','Push','Pull','Cardio']},
+      {label:'Mobility', type:'rest'},
+      {label:'Full Body C', type:'workout', categories:['Legs','Push','Pull','Cardio']},
+      {label:'Conditioning', type:daysPerWeek >= 4 ? 'workout' : 'rest', categories:['Legs','Push','Pull','Cardio']},
+      {label:'Rest', type:'rest'}
+    ];
+    if (daysPerWeek >= 5) templates[1] = {label:'Light Cardio', type:'workout', categories:['Cardio','Cardio']};
+    if (daysPerWeek >= 6) templates[3] = {label:'Core and Cardio', type:'workout', categories:['Push','Pull','Cardio']};
+    return templates;
+  }
+  if (phase === 2) {
+    return [
+      {label:'Upper A', type:'workout', categories:['Push','Push','Pull','Pull','Cardio']},
+      {label:'Lower A', type:'workout', categories:['Legs','Legs','Legs','Cardio']},
+      {label:'Recovery', type:daysPerWeek >= 5 ? 'workout' : 'rest', categories:['Cardio','Push']},
+      {label:'Upper B', type:'workout', categories:['Push','Pull','Push','Pull','Cardio']},
+      {label:'Lower B', type:'workout', categories:['Legs','Legs','Legs','Cardio']},
+      {label:'Conditioning', type:daysPerWeek >= 6 ? 'workout' : 'rest', categories:['Cardio','Cardio','Push']},
+      {label:'Rest', type:'rest'}
+    ];
+  }
+  return [
+    {label:'Push', type:'workout', categories:['Push','Push','Push','Cardio']},
+    {label:'Pull', type:'workout', categories:['Pull','Pull','Pull','Cardio']},
+    {label:'Legs', type:'workout', categories:['Legs','Legs','Legs','Cardio']},
+    {label:'HIIT', type:daysPerWeek >= 4 ? 'workout' : 'rest', categories:['Cardio','Cardio']},
+    {label:'Upper Strength', type:daysPerWeek >= 5 ? 'workout' : 'rest', categories:['Push','Pull','Push','Pull']},
+    {label:'Legs + Core', type:daysPerWeek >= 6 ? 'workout' : 'rest', categories:['Legs','Legs','Cardio']},
+    {label:'Rest', type:'rest'}
+  ];
+}
+
+function lookupExercise(category, location, phase, used) {
+  return exercises.find(item => item.category === category && item.locations.includes(location) && item.phases.includes(phase) && !used.includes(item.name))
+    || exercises.find(item => item.category === category && item.phases.includes(phase));
+}
+
+function cardioName(phase, goal, location) {
+  if (phase === 3) return 'HIIT Intervals';
+  if (goal === 'Weight Loss') return location === 'Gym' ? 'Cycling' : 'Walking';
+  return 'Walking';
+}
+
+function exerciseBlock(category, phase, input, used) {
+  const config = phaseConfig(phase, input);
+  const forcedName = category === 'Cardio' ? cardioName(phase, input.goal, input.location) : null;
+  const exercise = forcedName ? exercises.find(item => item.name === forcedName) : lookupExercise(category, input.location, phase, used);
+  used.push(exercise.name);
+  let sets = config.sets;
+  let reps = config.reps;
+  let rest = config.rest;
+  if (exercise.category === 'Cardio') {
+    sets = 1;
+    reps = `${config.cardio_minutes} min`;
+    rest = exercise.name === 'HIIT Intervals' ? 20 : 30;
+    if (exercise.name === 'HIIT Intervals') reps = `${Math.max(12, Math.min(Number(input.time_per_session), config.cardio_minutes))} min`;
+  }
+  return {name:exercise.name, sets, reps, rest_time:`${rest} sec`, difficulty:exercise.difficulty, category:exercise.category};
+}
+
+function weekSchedule(weekNumber, input) {
+  const phase = weekNumber <= 4 ? 1 : weekNumber <= 8 ? 2 : 3;
+  const config = phaseConfig(phase, input);
+  const templates = dayTemplate(phase, Number(input.days_per_week));
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  return templates.map((template, index) => {
+    const day = {day:dayNames[index], label:template.label, type:template.type, intensity:config.intensity, focus:config.focus, exercises:[]};
+    if (template.type !== 'workout') {
+      day.recovery_note = 'Recovery, mobility, and light walking.';
+      return day;
+    }
+    const used = [];
+    day.exercises = template.categories.map(category => exerciseBlock(category, phase, input, used));
+    return day;
+  });
+}
+
+function generatePlan(input) {
+  const today = new Date().toISOString().slice(0, 10);
+  const plan = {meta:{...input, days_per_week:Number(input.days_per_week), time_per_session:Number(input.time_per_session), generated_at:new Date().toISOString(), start_date:today}, phases:{}, weeks:{}};
+  for (let phase = 1; phase <= 3; phase += 1) plan.phases[phase] = phaseConfig(phase, input);
+  for (let week = 1; week <= 12; week += 1) {
+    const phase = week <= 4 ? 1 : week <= 8 ? 2 : 3;
+    plan.weeks[week] = {week_number:week, phase, phase_title:plan.phases[phase].title, split:plan.phases[phase].split, schedule:weekSchedule(week, input)};
+  }
+  return plan;
+}
+
+function weekDate(plan, weekNumber, dayIndex) {
+  const start = new Date(`${plan.meta.start_date}T00:00:00`);
+  const day = start.getDay() || 7;
+  start.setDate(start.getDate() - day + 1 + ((weekNumber - 1) * 7) + dayIndex);
+  return start.toISOString().slice(0, 10);
+}
+
+function weeklyProgress(plan, logs, weekNumber) {
+  let planned = 0;
+  let completed = 0;
+  plan.weeks[weekNumber].schedule.forEach((day, index) => {
+    if (day.type !== 'workout') return;
+    planned += 1;
+    const date = weekDate(plan, weekNumber, index);
+    if (logs.some(log => log.date === date)) completed += 1;
+  });
+  return {planned, completed, percent: planned ? Math.round((completed / planned) * 100) : 0};
+}
+
+function renderDashboard() {
+  const plan = getPlan();
+  if (!plan) {
+    document.getElementById('planner-form').hidden = false;
+    document.getElementById('dashboard').hidden = true;
+    return;
+  }
+  const logs = getLogs();
+  const week = plan.weeks[selectedWeek];
+  const progress = weeklyProgress(plan, logs, selectedWeek);
+  document.getElementById('planner-form').hidden = true;
+  document.getElementById('dashboard').hidden = false;
+  document.getElementById('completed-count').textContent = new Set(logs.map(log => log.date)).size;
+  document.getElementById('exercise-count').textContent = logs.length;
+  document.getElementById('weekly-count').textContent = `${progress.completed}/${progress.planned}`;
+  document.getElementById('weekly-percent').textContent = `${progress.percent}%`;
+  document.getElementById('weekly-fill').style.width = `${progress.percent}%`;
+  document.getElementById('phase-title').textContent = week.phase_title;
+  document.getElementById('phase-focus').textContent = plan.phases[week.phase].focus;
+  document.getElementById('meta-list').innerHTML = `
+    <div class="meta-item"><strong>Split</strong>${html(week.split)}</div>
+    <div class="meta-item"><strong>Training profile</strong>Goal: ${html(plan.meta.goal)}, Experience: ${html(plan.meta.experience)}, Location: ${html(plan.meta.location)}.</div>
+    <div class="meta-item"><strong>Availability</strong>${html(plan.meta.days_per_week)} days per week, ${html(plan.meta.time_per_session)} minutes per session.</div>`;
+  document.getElementById('week-nav').innerHTML = Array.from({length:12}, (_, index) => {
+    const weekNum = index + 1;
+    return `<button type="button" class="${weekNum === selectedWeek ? 'active' : ''}" data-week="${weekNum}">Week ${weekNum}</button>`;
+  }).join('');
+  const recent = logs.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  document.getElementById('recent-logs').innerHTML = recent.length ? `<ul>${recent.map(log => `<li><strong>${html(log.exercise_name)}</strong><br>${html(log.date)}, ${html(log.sets_completed)} sets, ${html(log.reps_completed)} reps</li>`).join('')}</ul>` : '<div class="empty">No workouts logged yet. Use the day cards below and tap Mark as done after finishing a session.</div>';
+  document.getElementById('schedule').innerHTML = week.schedule.map((day, index) => renderDay(plan, day, index)).join('');
+}
+
+function renderDay(plan, day, index) {
+  if (day.type !== 'workout') {
+    return `<article class="day-card rest"><div class="day-head"><div><div class="day-name">${html(day.day)}</div><div class="day-label">${html(day.label)}</div></div><div class="tag">Recovery</div></div><div class="empty">${html(day.recovery_note)}</div></article>`;
+  }
+  const rows = day.exercises.map(exercise => `<tr><td>${html(exercise.name)}</td><td>${html(exercise.sets)}</td><td>${html(exercise.reps)}</td><td>${html(exercise.rest_time)}</td><td>${html(exercise.difficulty)}</td><td>${html(exercise.category)}</td></tr>`).join('');
+  const date = weekDate(plan, selectedWeek, index);
+  return `<article class="day-card">
+    <div class="day-head"><div><div class="day-name">${html(day.day)}</div><div class="day-label">${html(day.label)}</div></div><div class="tag">${html(day.intensity)}</div></div>
+    <table><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th>Level</th><th>Category</th></tr></thead><tbody>${rows}</tbody></table>
+    <form class="day-form" data-day-index="${index}">
+      <label>Workout date</label>
+      <input type="date" name="workout_date" value="${html(date)}">
+      <button class="btn primary" type="submit">Mark as done</button>
+    </form>
+  </article>`;
+}
+
+document.getElementById('plan-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+  const plan = generatePlan(data);
+  localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+  selectedWeek = 1;
+  renderDashboard();
+  showFlash('Your 12-week workout plan is ready.');
+});
+
+document.getElementById('view-plan-btn').addEventListener('click', () => {
+  if (!getPlan()) {
+    showFlash('Generate a plan first.');
+    return;
+  }
+  renderDashboard();
+});
+
+document.getElementById('new-plan-btn').addEventListener('click', () => {
+  document.getElementById('planner-form').hidden = false;
+  document.getElementById('dashboard').hidden = true;
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Reset the current workout plan and activity logs?')) return;
+  localStorage.removeItem(PLAN_KEY);
+  localStorage.removeItem(LOG_KEY);
+  document.getElementById('planner-form').hidden = false;
+  document.getElementById('dashboard').hidden = true;
+  showFlash('Your workout plan was reset.');
+});
+
+document.getElementById('week-nav').addEventListener('click', event => {
+  const button = event.target.closest('button[data-week]');
+  if (!button) return;
+  selectedWeek = Number(button.dataset.week);
+  renderDashboard();
+});
+
+document.getElementById('schedule').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.target.closest('.day-form');
+  const plan = getPlan();
+  const dayIndex = Number(form.dataset.dayIndex);
+  const day = plan.weeks[selectedWeek].schedule[dayIndex];
+  const date = form.elements.workout_date.value;
+  const logs = getLogs().filter(log => !(log.date === date && day.exercises.some(exercise => exercise.name === log.exercise_name)));
+  day.exercises.forEach(exercise => {
+    const match = String(exercise.reps).match(/\d+/);
+    logs.push({date, exercise_name:exercise.name, sets_completed:Number(exercise.sets), reps_completed:match ? Number(match[0]) : 0});
+  });
+  saveLogs(logs);
+  renderDashboard();
+  showFlash('Workout saved successfully.');
+});
+
+renderDashboard();
+</script>
+</body>
+</html>
